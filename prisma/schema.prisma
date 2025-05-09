@@ -1,0 +1,35 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+// datasource db {
+//   provider = "sqlite"
+//   url      = "file:./dev.db"
+// }
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Todo {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  color       String?
+  status      String   @default("todo")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  order       Int      @default(0)
+  pinned Boolean @default(false)
+}
+
+
+model User {
+  id       Int    @id @default(autoincrement())
+  email    String @unique
+  password String
+  todos    Todo[]
+}
