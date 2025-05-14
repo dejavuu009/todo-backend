@@ -11,7 +11,11 @@ const prisma = new PrismaClient({
 
 app.use(
   cors({
-    origin: 'https://todo-frontend-80b27m86s-dejavuu009s-projects.vercel.app', // <-- frontend na Vercel
+    origin: [
+      'https://todo-frontend-delta-two.vercel.app',
+      'https://todo-frontend-git-main-dejavuu009s-projects.vercel.app',
+      'https://todo-frontend-80b27m86s-dejavuu009s-projects.vercel.app'
+    ],
     credentials: true,
   })
 );
