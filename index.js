@@ -23,13 +23,23 @@ app.use(
 app.use(express.json());
 
 // ✅ Login
+const jwt = require('jsonwebtoken');
+
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
   const user = await prisma.user.findUnique({ where: { email } });
+
   if (!user || user.password !== password) {
-    return res.status(401).json({ message: 'Invalid credentials' });
+    return res.status(401).json({ error: 'Invalid credentials' });
   }
-  res.json({ message: 'Login successful' });
+
+  // 🔐 Utwórz token
+  const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
+    expiresIn: '7d',
+  });
+
+  // ✅ Zwróć token do frontendu
+  res.status(200).json({ message: 'Login successful', token });
 });
 
 // ✅ Register
