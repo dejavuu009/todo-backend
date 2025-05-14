@@ -1,17 +1,18 @@
-
 const express = require('express');
 const cors = require('cors');
 const { PrismaClient } = require('@prisma/client');
+
 const app = express();
+
+
 const prisma = new PrismaClient({
-  log: ['info'], 
-  errorFormat: 'pretty' 
+  log: ['query', 'info', 'warn'], 
 });
 
 app.use(cors());
 app.use(express.json());
 
-// Przykładowe API (do rozszerzenia)
+// ✅ Login
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
   const user = await prisma.user.findUnique({ where: { email } });
@@ -21,6 +22,7 @@ app.post('/api/login', async (req, res) => {
   res.json({ message: 'Login successful' });
 });
 
+// ✅ Register
 app.post('/api/register', async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -33,10 +35,12 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
+// ✅ Healthcheck
 app.get('/api/health', (req, res) => {
   res.send('Backend API is running');
 });
 
+// ✅ Start serwera
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
