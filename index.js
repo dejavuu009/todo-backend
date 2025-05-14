@@ -9,7 +9,13 @@ const prisma = new PrismaClient({
   log: ['query', 'info', 'warn'], 
 });
 
-app.use(cors());
+app.use(
+  cors({
+    origin: 'https://todo-frontend-80b27m86s-dejavuu009s-projects.vercel.app', // <-- frontend na Vercel
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 
 // ✅ Login
