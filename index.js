@@ -1,14 +1,14 @@
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
-const { PrismaClient } = require('@prisma/client');
+require('dotenv').config();
+
+const loginRoute = require('./routes/login');
+const registerRoute = require('./routes/register');
+const todoRoute = require('./routes/todo');
 
 const app = express();
-const prisma = new PrismaClient({
-  log: ['query', 'info', 'warn'],
-});
 
-// 🔐 Middleware
 app.use(cookieParser());
 app.use(express.json());
 
@@ -24,55 +24,14 @@ app.use(
   })
 );
 
-// ✅ Login (bez JWT – tylko zapis userId w cookie)
-app.post('/api/login', async (req, res) => {
-  const { email, password } = req.body;
+app.use('/api/login', loginRoute);
+app.use('/api/register', registerRoute);
+app.use('/api/todo', todoRoute);
 
-  const user = await prisma.user.findUnique({ where: { email } });
-
-  if (!user || user.password !== password) {
-    return res.status(401).json({ message: 'Invalid credentials' });
-  }
-
-  res
-    .cookie('userId', user.id, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    })
-    .json({ message: 'Login successful', user });
-});
-
-// ✅ Register
-app.post('/api/register', async (req, res) => {
-  const { email, password } = req.body;
-  try {
-    const user = await prisma.user.create({
-      data: { email, password },
-    });
-    res.json(user);
-  } catch (err) {
-    res.status(400).json({ error: 'User already exists or invalid data' });
-  }
-});
-
-// ✅ Logout
-app.post('/api/logout', (req, res) => {
-  res.clearCookie('userId', {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'none',
-  });
-  res.json({ message: 'Logged out' });
-});
-
-// ✅ Healthcheck
 app.get('/api/health', (req, res) => {
   res.send('Backend API is running');
 });
 
-// ✅ Start serwera
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
