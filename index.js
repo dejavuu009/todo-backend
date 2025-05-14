@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
-const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
 
 const app = express();
@@ -21,11 +20,11 @@ app.use(
       'https://todo-frontend-80b27m86s-dejavuu009s-projects.vercel.app',
     ],
     credentials: true,
-    optionsSuccessStatus: 200, // ✅ ważne dla Railway i CORS preflight
+    optionsSuccessStatus: 200,
   })
 );
 
-// ✅ Login
+// ✅ Login (bez JWT – tylko zapis userId w cookie)
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -35,16 +34,12 @@ app.post('/api/login', async (req, res) => {
     return res.status(401).json({ message: 'Invalid credentials' });
   }
 
-  const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
-    expiresIn: '7d',
-  });
-
   res
-    .cookie('auth', token, {
+    .cookie('userId', user.id, {
       httpOnly: true,
       secure: true,
       sameSite: 'none',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 dni
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     })
     .json({ message: 'Login successful', user });
 });
@@ -58,10 +53,18 @@ app.post('/api/register', async (req, res) => {
     });
     res.json(user);
   } catch (err) {
-    res
-      .status(400)
-      .json({ error: 'User already exists or invalid data' });
+    res.status(400).json({ error: 'User already exists or invalid data' });
   }
+});
+
+// ✅ Logout
+app.post('/api/logout', (req, res) => {
+  res.clearCookie('userId', {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'none',
+  });
+  res.json({ message: 'Logged out' });
 });
 
 // ✅ Healthcheck
