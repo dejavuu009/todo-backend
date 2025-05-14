@@ -39,7 +39,13 @@ app.post('/api/login', async (req, res) => {
   });
 
   // ✅ Zwróć token do frontendu
-  res.status(200).json({ message: 'Login successful', token });
+  res.status(200).json({
+    message: 'Login successful',
+    user: {
+      id: user.id,
+      email: user.email,
+    },
+  });
 });
 
 // ✅ Register
