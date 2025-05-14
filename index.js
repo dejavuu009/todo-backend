@@ -1,51 +1,52 @@
 const express = require('express');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
+const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
 
 const app = express();
-
-
 const prisma = new PrismaClient({
-  log: ['query', 'info', 'warn'], 
+  log: ['query', 'info', 'warn'],
 });
+
+// 🔐 Middleware
+app.use(cookieParser());
+app.use(express.json());
 
 app.use(
   cors({
     origin: [
       'https://todo-frontend-delta-two.vercel.app',
       'https://todo-frontend-git-main-dejavuu009s-projects.vercel.app',
-      'https://todo-frontend-80b27m86s-dejavuu009s-projects.vercel.app'
+      'https://todo-frontend-80b27m86s-dejavuu009s-projects.vercel.app',
     ],
     credentials: true,
+    optionsSuccessStatus: 200, // ✅ ważne dla Railway i CORS preflight
   })
 );
 
-app.use(express.json());
-
 // ✅ Login
-const jwt = require('jsonwebtoken');
-
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
+
   const user = await prisma.user.findUnique({ where: { email } });
 
   if (!user || user.password !== password) {
-    return res.status(401).json({ error: 'Invalid credentials' });
+    return res.status(401).json({ message: 'Invalid credentials' });
   }
 
-  // 🔐 Utwórz token
   const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
     expiresIn: '7d',
   });
 
-  // ✅ Zwróć token do frontendu
-  res.status(200).json({
-    message: 'Login successful',
-    user: {
-      id: user.id,
-      email: user.email,
-    },
-  });
+  res
+    .cookie('auth', token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 dni
+    })
+    .json({ message: 'Login successful', user });
 });
 
 // ✅ Register
@@ -53,11 +54,13 @@ app.post('/api/register', async (req, res) => {
   const { email, password } = req.body;
   try {
     const user = await prisma.user.create({
-      data: { email, password }
+      data: { email, password },
     });
     res.json(user);
   } catch (err) {
-    res.status(400).json({ error: 'User already exists or invalid data' });
+    res
+      .status(400)
+      .json({ error: 'User already exists or invalid data' });
   }
 });
 
