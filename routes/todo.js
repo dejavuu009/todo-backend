@@ -6,7 +6,7 @@ const router = express.Router();
 const prisma = new PrismaClient();
 
 // GET - Pobierz wszystkie zadania użytkownika (dla testu bez autoryzacji)
-router.get('/api/todo', async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const todos = await prisma.todo.findMany({
       orderBy: { createdAt: 'asc' },
@@ -19,7 +19,7 @@ router.get('/api/todo', async (req, res) => {
 });
 
 // POST - Dodaj nowe zadanie (dla testu bez autoryzacji)
-router.post('/api/todo', async (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const { title, description, color, status, pinned, userId } = req.body;
 
@@ -46,7 +46,7 @@ router.post('/api/todo', async (req, res) => {
 });
 
 // PATCH - Aktualizuj zadanie
-router.patch('/api/todo', async (req, res) => {
+router.patch('/', async (req, res) => {
   try {
     const { id, title, description, status, color, pinned } = req.body;
 
@@ -67,7 +67,7 @@ router.patch('/api/todo', async (req, res) => {
 });
 
 // DELETE - Usuń zadanie
-router.delete('/api/todo', async (req, res) => {
+router.delete('/', async (req, res) => {
   try {
     const { id } = req.body;
 
