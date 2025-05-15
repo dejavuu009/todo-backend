@@ -24,7 +24,13 @@ router.post('/', async (req, res) => {
       sameSite: 'none',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     })
-    .json({ message: 'Login successful', user });
+    .json({
+      message: 'Login successful',
+      user: {
+        id: user.id,
+        email: user.email, // NIE wysyłamy hasła!
+      },
+    });
 });
 
 module.exports = router;
