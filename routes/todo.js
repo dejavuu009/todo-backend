@@ -27,16 +27,20 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'Brak tytułu' });
     }
 
-    const newTodo = await prisma.todo.create({
-      data: {
-        title,
-        description: description || null,
-        color: color || null,
-        status: status || 'todo',
-        pinned: pinned ?? false,
-        userId,
-      },
-    });
+    if (!userId) {
+        return res.status(400).json({ error: 'Brak userId' });
+      }
+      
+      const newTodo = await prisma.todo.create({
+        data: {
+          title,
+          description: description || null,
+          color: color || null,
+          status: status || 'todo',
+          pinned: pinned ?? false,
+          user: { connect: { id: userId } },
+        },
+      });
 
     res.json(newTodo);
   } catch (error) {
