@@ -6,6 +6,7 @@ require('dotenv').config();
 const loginRoute = require('./routes/login');
 const registerRoute = require('./routes/register');
 const todoRoute = require('./routes/todo');
+const logoutRoute = require('./routes/logout');
 
 const app = express();
 
@@ -28,6 +29,8 @@ app.use(
 app.use('/api/login', loginRoute);
 app.use('/api/register', registerRoute);
 app.use('/api/todo', todoRoute);
+app.use('/api/logout', logoutRoute);
+
 
 app.get('/api/health', (req, res) => {
   res.send('Backend API is running');
