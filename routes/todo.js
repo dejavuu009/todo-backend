@@ -7,8 +7,15 @@ const prisma = new PrismaClient();
 
 // GET - Pobierz wszystkie zadania użytkownika (dla testu bez autoryzacji)
 router.get('/', async (req, res) => {
+
+    const userId = parseInt(req.query.userId);
+
+    if (!userId) {
+      return res.status(400).json({ error: 'Missing Id in request' });
+    }
   try {
     const todos = await prisma.todo.findMany({
+        where: { userId },
       orderBy: { createdAt: 'asc' },
     });
     res.json(todos);
@@ -38,7 +45,7 @@ router.post('/', async (req, res) => {
           color: color || null,
           status: status || 'todo',
           pinned: pinned ?? false,
-          user: { connect: { id: userId } },
+          userId,
         },
       });
 
